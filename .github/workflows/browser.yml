@@ -1,0 +1,45 @@
+name: Browser Web Terminal
+on: workflow_dispatch
+
+jobs:
+  start-web-terminal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Web Terminal Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl wget git nano vim tmux htop
+          
+          # 1. Install ttyd (The tool that puts the terminal in your browser)
+          sudo curl -sLk https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 -o /usr/local/bin/ttyd
+          sudo chmod +x /usr/local/bin/ttyd
+          
+          # 2. Install Cloudflared (To generate a secure internet link)
+          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+
+      - name: Start Terminal and Generate Link
+        run: |
+          # Start the web terminal in the background as the root user
+          sudo ttyd -p 8080 bash &
+          sleep 2
+          
+          # Start the Cloudflare tunnel and save the output to a log file
+          cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
+          
+          # Wait 10 seconds for Cloudflare to generate your custom URL
+          sleep 10
+          
+          # Print the URL so you can copy it
+          echo "========================================================="
+          echo "🌐 YOUR WEB TERMINAL IS READY!"
+          echo "🔗 COPY THIS LINK AND PASTE IT IN YOUR MOBILE BROWSER:"
+          grep -o 'https://[a-zA-Z0-9.-]*\.trycloudflare\.com' tunnel.log
+          echo "========================================================="
+          
+          # Keep the server alive for 6 hours (21600 seconds)
+          sleep 21600
+          

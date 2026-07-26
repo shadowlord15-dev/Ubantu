@@ -13,11 +13,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y curl wget git nano vim tmux htop
           
-          # 1. Install ttyd (The tool that puts the terminal in your browser)
+          # 1. Install ttyd
           sudo curl -sLk https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 -o /usr/local/bin/ttyd
           sudo chmod +x /usr/local/bin/ttyd
           
-          # 2. Install Cloudflared (To generate a secure internet link)
+          # 2. Install Cloudflared
           wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
           sudo dpkg -i cloudflared-linux-amd64.deb
 
@@ -25,21 +25,32 @@ jobs:
         run: |
           # Start the web terminal in the background as the root user
           sudo ttyd -p 8080 bash &
-          sleep 2
           
           # Start the Cloudflare tunnel and save the output to a log file
           cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
           
-          # Wait 10 seconds for Cloudflare to generate your custom URL
-          sleep 10
+          echo "Waiting for Cloudflare to generate your custom URL..."
+          
+          # Smart Wait: Loop and wait up to 40 seconds for the URL to appear
+          for i in {1..20}; do
+            if grep -q "trycloudflare.com" tunnel.log; then
+              break
+            fi
+            sleep 2
+          done
           
           # Print the URL so you can copy it
           echo "========================================================="
           echo "🌐 YOUR WEB TERMINAL IS READY!"
           echo "🔗 COPY THIS LINK AND PASTE IT IN YOUR MOBILE BROWSER:"
+          echo ""
           grep -o 'https://[a-zA-Z0-9.-]*\.trycloudflare\.com' tunnel.log
+          echo ""
           echo "========================================================="
+          
+          # Print raw logs just in case it failed, so you can see why
+          echo "--- (Diagnostics: Raw Tunnel Logs Below) ---"
+          cat tunnel.log
           
           # Keep the server alive for 6 hours (21600 seconds)
           sleep 21600
-          

@@ -1,33 +1,30 @@
 name: Ubuntu SSH & Web Server
 on: workflow_dispatch
-
-# Prevents multiple machines from running at the same time to save free tier minutes
 concurrency: 
   group: ubuntu-server
   cancel-in-progress: true
-
 jobs:
   start-server:
     runs-on: ubuntu-latest
-    # Forces the server to stay alive for the maximum 6 hours (360 minutes)
     timeout-minutes: 360
-    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
+        
       - name: Fast Install Ubuntu Tools
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get update -y
-          # Skips unnecessary bloatware for a faster install
           sudo apt-get install -y --no-install-recommends curl wget git nano vim tmux htop net-tools
-          # Cleans up temporary files to free up disk space
           sudo apt-get clean
           sudo rm -rf /var/lib/apt/lists/*
-      - name: Open SSH & Web Tunnel
+          
+      - name: Open SSH Tunnel (Instant Logs)
         uses: mxschmitt/action-tmate@v3
         with:
           limit-access-to-actor: true
+          detached: true
           
+      - name: Keep Server Alive for 6 Hours
+        run: sleep 21600

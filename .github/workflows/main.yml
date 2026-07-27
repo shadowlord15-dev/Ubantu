@@ -26,6 +26,8 @@ jobs:
           # Cleans up temporary files to free up disk space
           sudo apt-get clean
           sudo rm -rf /var/lib/apt/lists/*
-
       - name: Open SSH & Web Tunnel
         uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+          

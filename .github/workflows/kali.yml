@@ -1,0 +1,34 @@
+name: Kali Linux SSH Server
+on: workflow_dispatch
+concurrency: 
+  group: kali-server
+  cancel-in-progress: true
+jobs:
+  start-server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Build & Automate Kali Linux
+        run: |
+          # 1. Start Kali silently in the background
+          docker run -d -it --name kali kalilinux/kali-rolling /bin/bash
+          
+          # 2. Pre-install Kali Core tools so you do not have to wait
+          docker exec kali apt-get update -y
+          docker exec kali apt-get install -y --no-install-recommends kali-linux-core
+          
+          # 3. Create a 1-word shortcut command to enter Kali instantly
+          echo "docker exec -it kali /bin/bash" | sudo tee /usr/local/bin/kali
+          sudo chmod +x /usr/local/bin/kali
+          
+      - name: Open SSH Tunnel (Instant Logs)
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+          detached: true
+          
+      - name: Keep Server Alive for 6 Hours
+        run: sleep 21600

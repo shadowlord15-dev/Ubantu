@@ -14,7 +14,7 @@ jobs:
       - name: Build & Automate Kali Linux
         run: |
           # 1. Start Kali silently in the background
-          docker run -d -it --name kali kalilinux/kali-rolling /bin/bash
+          docker run -d -it --name kali --privileged kalilinux/kali-rolling /bin/bash
           
           # 2. Pre-install Kali Core tools so you do not have to wait
           docker exec kali apt-get update -y

@@ -18,7 +18,7 @@ jobs:
           
           # 2. Pre-install Kali Core tools so you do not have to wait
           docker exec kali apt-get update -y
-          docker exec kali apt-get install -y --no-install-recommends kali-linux-core
+          docker exec kali apt-get install -y --no-install-recommends kali-linux-core kali-tools-top10
           
           # 3. Create a 1-word shortcut command to enter Kali instantly
           echo "docker exec -it kali /bin/bash" | sudo tee /usr/local/bin/kali

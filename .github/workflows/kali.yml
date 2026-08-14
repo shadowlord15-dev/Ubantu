@@ -24,6 +24,9 @@ jobs:
           echo "docker exec -it kali /bin/bash" | sudo tee /usr/local/bin/kali
           sudo chmod +x /usr/local/bin/kali
           
+      - name: Enable Automatic Touch Scrolling
+        run: echo "set -g mouse on" > ~/.tmux.conf
+        
       - name: Open SSH Tunnel (Instant Logs)
         uses: mxschmitt/action-tmate@v3
         with:
